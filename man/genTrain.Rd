@@ -7,7 +7,7 @@
 genTrain(sound)
 }
 \arguments{
-\item{sound}{The sound to be imported.}
+\item{sound}{The sound file to be imported.}
 }
 \description{
 Create auditory stimulus for behavioral experiments.
