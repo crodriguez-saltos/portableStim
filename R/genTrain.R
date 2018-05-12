@@ -7,10 +7,8 @@
 #' genTrain(sound = "#tico#")
 
 genTrain <- function(sound){
-  require(seewave)
-  
   if (sound == "#tico#"){
-    data(tico)
+    data(tico, package = "seewave")
     s <- tico
     rm(tico)
   }
