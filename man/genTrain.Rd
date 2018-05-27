@@ -2,18 +2,78 @@
 % Please edit documentation in R/genTrain.R
 \name{genTrain}
 \alias{genTrain}
-\title{Generate a stimulus train}
+\title{Generate auditory presentation}
 \usage{
-genTrain(sound)
+genTrain(sound, species, soundlab, infodb, tpres, nrend = NA, intRend.type,
+  intRend.length, int.factor = 1, nbout = NA, bout.length = NA,
+  intBout.type, intBout.length, rate, seed = NA, output)
 }
 \arguments{
-\item{sound}{The sound file to be imported.}
+\item{sound}{Source sound. Can also be a directory, or many directories,
+containing the sound file.}
+
+\item{species}{Species for each sound file.}
+
+\item{soundlab}{Label of sound file (eg. “experimental”, “positive control”,
+“negative control”).}
+
+\item{tpres}{Total duration of presentation in seconds (5 min for sound
+transmission)}
+
+\item{nrend}{Number of renditions per bout.}
+
+\item{intRend.type}{Type of intervals between renditions (constant - mean
+natural interval –- median) (depends on species) - read from a database.}
+
+\item{intRend.length}{Length of the interval between rendtions. Only
+functional if intRend.type = "custom".}
+
+\item{int.factor}{Factor by which to multiply the length of the interval
+between renditions. (0.5, 1, or 2) (for sound transmission experiment).}
+
+\item{nbout}{Number of bouts in presentation (all experiments except sound
+transmission – only those in which bout interval type= random)}
+
+\item{bout.length}{Length of each bout (predetermined: 20s – behavior; 10s –
+sound transmission; 5s - ZENK)}
+
+\item{intBout.type}{Type of interval between bouts. Can take the values
+"random" or "constant".}
+
+\item{intBout.length}{Length of interval between bouts (depending on type of
+interval: range, number)}
+
+\item{rate}{Bout rate, in times per minute.}
+
+\item{seed}{Seed for random number generators.}
+
+\item{output}{Name of output file.}
+
+\item{infoDB}{Databasee containing info on each source file.}
 }
 \description{
-Create auditory stimulus for behavioral experiments.
+Generate auditory presentations based on existing sound files.
 }
-\examples{
-genTrain(sound = "#tico#")
+\details{
+If the length of the source audio files is such that the presentation
+ would end being longer than T, the last instance of the source sound will be
+ truncated in order for the duration of the presentation to be equal to T.
+
+ More than one directory file can be given in fs. Use the concanteante (c())
+ function to list the directories.
+
+ Name of files should be stored in a table, relating the name of the file to
+ a particular species. Alternatively, the species can be included in the name
+ of the file.
+
+ Have just one script that will allow to generate stimuli for all
+ experiments. Then, create three derivative functions, one for each
+ experiment.
+
+ For auditory stimuli experiment set bout.length, intRend.type,
+ intRend.length (for positive control), nbout, tpres.'
+
+ For ZENK stimuli, set rate, nrend, intBout.length, intBout.type
 }
 \keyword{audio}
 \keyword{stimuli}
