@@ -25,6 +25,13 @@ intblock <- function(
     nblock <- ceiling((total - int.length) / (int.length + block.length))
   }
 
+  if (is.na(int.length)){
+    # Number of bouts must be given.
+    int.length <- (total - block.length * nblock) / (nblock + ifelse(
+      test= gap_start, yes = 1, no = 0
+    ))
+  }
+
   if (is.na(total)){
     # This assignment for total is provisional
     totalwasna <- T

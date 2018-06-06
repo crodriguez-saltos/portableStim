@@ -5,8 +5,6 @@
 #'@param sound Source sound. Can also be a directory, or many directories,
 #'  containing the sound file.
 #'@param species Species for each sound file.
-#'@param soundlab Label of sound file (eg. “experimental”, “positive control”,
-#'  “negative control”).
 #'@param infoDB Databasee containing info on each source file.
 #'@param tpres Total duration of presentation in seconds (5 min for sound
 #'  transmission)
@@ -27,38 +25,25 @@
 #'  interval: range, number)
 #'@param rate Bout rate, in times per minute.
 #'@param seed Seed for random number generators.
+#'@param report Logical. Should silence gap start times be reported?
+#'@param writewav Logical. Should presentation be written into a wave file?
 #'@param output Name of output file.
+#'@param ext Extension of output file. Omitted if already specified in output.
+#'@param returnoutput Logical. Should output filename be returned?
 #'
 #'@details If the length of the source audio files is such that the presentation
 #'  would end being longer than T, the last instance of the source sound will be
 #'  truncated in order for the duration of the presentation to be equal to T.
-#'
-#'  More than one directory file can be given in fs. Use the concanteante (c())
-#'  function to list the directories.
-#'
-#'  Name of files should be stored in a table, relating the name of the file to
-#'  a particular species. Alternatively, the species can be included in the name
-#'  of the file.
-#'
-#'  Have just one script that will allow to generate stimuli for all
-#'  experiments. Then, create three derivative functions, one for each
-#'  experiment.
-#'
-#'  For auditory stimuli experiment set bout.length, intRend.type,
-#'  intRend.length (for positive control), nbout, tpres.'
-#'
-#'  For ZENK stimuli, set rate, nrend, intBout.length, intBout.type
 #'@export
 
 genTrain <- function(
   sound,
-  species,
-  soundlab,
-  infodb,
+  species = NULL,
+  infodb = NULL,
   tpres,
   #nrend = NA,
   intRend.type,
-  intRend.length,
+  intRend.length = NA,
   int.factor = 1,
   nbout = NA,
   bout.length = NA,
@@ -66,12 +51,15 @@ genTrain <- function(
   intBout.length = NA,
   rate = NA,
   seed = NA,
-  output
+  writewav = T,
+  output,
+  ext = "wav",
+  report = T,
+  returnoutput = F
 ){
-
   # Check argument values----
-  if (intRend.length >= bout.length){
-    stop("Interval between each rendition cannot be equal or larger than bout length.")
+  if (is.na(bout.length)){
+    stop("Please specify bout duration.")
   }
 
   if (!is.na(nbout) & !is.na(intBout.length)){
@@ -82,9 +70,43 @@ genTrain <- function(
     ))
   }
 
+  if (bout.length > tpres){
+    stop("Bout duration cannot be longer than presentation duration.")
+  }
+
   # Set seed----
   if (!is.na(seed)){
     set.seed(seed)
+  }
+
+  # Construct output filename----
+  output <- tools::file_path_sans_ext(output)
+
+  fileparts <- list(output, species)
+  fileparts <- lapply(fileparts, function(x){
+    gsub(pattern = " ", replacement = "-", x = x)
+  })
+  pasteunderscore <- function(...) paste(..., sep= "_")
+  output <- do.call("pasteunderscore", fileparts)
+  while(substr(start = nchar(output), stop= nchar(output), x = output) == "_"){
+    output <- substr(start= 1, stop= nchar(output) - 1, x = output)
+  }
+  output <- paste(output, ext, sep= ".")
+  rm(fileparts, pasteunderscore)
+
+  # Read inter-rendition intervals from a database----
+  if(!is.null(infodb)){
+    if (is.null(species)){
+      stop("Please provide a species name.")
+    }
+    if(!is.na(intRend.length)){
+      warning("intRend.length will be overriden by value from database.")
+    }
+    intRend.length <- infodb[infodb$species == species,]$interval
+  }
+
+  if (intRend.length >= bout.length){
+    stop("Interval between each rendition cannot be equal or larger than bout length.")
   }
 
   # Get duration of sound----
@@ -105,19 +127,19 @@ genTrain <- function(
   }
 
   boutmat <- intblock(
-      int.type = intBout.type,
-      int.length = intBout.length,
-      block.length = bout.length,
-      nblock = nbout,
-      total = tpres,
-      gap_start = T
+    int.type = intBout.type,
+    int.length = intBout.length,
+    block.length = bout.length,
+    nblock = nbout,
+    total = tpres,
+    gap_start = T
   )
 
   # Within a bout, define start and end timepoints of renditions----
   rendmat <- intblock(
     int.type = intRend.type,
     int.length = intRend.length * int.factor,
-   # nblock = nrend,
+    # nblock = nrend,
     block.length = duration,
     total = bout.length,
     gap_start = F
@@ -125,16 +147,36 @@ genTrain <- function(
 
   # Arrange bout----
   boutf <- tempfile(fileext = ".wav")
+  rendmat <- cbind(rendmat, rep(bout.length, 2))
   rend.gaps <- unname(c(
     rendmat[1,1],
     rendmat[1,2:ncol(rendmat)] - rendmat[2, 1:(ncol(rendmat) - 1)]
   ))
-  metamerize(sound = f, gaps = rend.gaps, total = bout.length, output = boutf)
+  rend.gaps <- rend.gaps[rend.gaps >= 0]
+
+  if (writewav){
+    metamerize(sound = f, gaps = rend.gaps, total = bout.length,
+               output = boutf)
+  }
 
   # Arrange presentation----
+  boutmat <- cbind(boutmat, rep(tpres, 2))
   bout.gaps <- unname(c(
     boutmat[1,1],
     boutmat[1,2:ncol(boutmat)] - boutmat[2, 1:(ncol(boutmat) - 1)]
   ))
-  metamerize(sound = boutf, gaps = bout.gaps, total = tpres, output = output)
+  bout.gaps <- bout.gaps[bout.gaps >= 0]
+  if (writewav){
+    metamerize(sound = boutf, gaps = bout.gaps, total = tpres,
+               output = output)
+  }
+
+  # Write report----
+  if (report){
+    return(list(rendtion.gaps = rend.gaps, bout.gaps = bout.gaps))
+  }
+
+  if (returnoutput){
+    return(output)
+  }
 }

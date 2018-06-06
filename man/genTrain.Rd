@@ -4,9 +4,10 @@
 \alias{genTrain}
 \title{Generate auditory presentation}
 \usage{
-genTrain(sound, species, soundlab, infodb, tpres, nrend = NA, intRend.type,
-  intRend.length, int.factor = 1, nbout = NA, bout.length = NA,
-  intBout.type, intBout.length, rate, seed = NA, output)
+genTrain(sound, species = NULL, infodb = NULL, tpres, intRend.type,
+  intRend.length = NA, int.factor = 1, nbout = NA, bout.length = NA,
+  intBout.type, intBout.length = NA, rate = NA, seed = NA, writewav = T,
+  output, ext = "wav", report = T, returnoutput = F)
 }
 \arguments{
 \item{sound}{Source sound. Can also be a directory, or many directories,
@@ -14,13 +15,8 @@ containing the sound file.}
 
 \item{species}{Species for each sound file.}
 
-\item{soundlab}{Label of sound file (eg. “experimental”, “positive control”,
-“negative control”).}
-
 \item{tpres}{Total duration of presentation in seconds (5 min for sound
 transmission)}
-
-\item{nrend}{Number of renditions per bout.}
 
 \item{intRend.type}{Type of intervals between renditions (constant - mean
 natural interval –- median) (depends on species) - read from a database.}
@@ -47,9 +43,19 @@ interval: range, number)}
 
 \item{seed}{Seed for random number generators.}
 
+\item{writewav}{Logical. Should presentation be written into a wave file?}
+
 \item{output}{Name of output file.}
 
+\item{ext}{Extension of output file. Omitted if already specified in output.}
+
+\item{report}{Logical. Should silence gap start times be reported?}
+
+\item{returnoutput}{Logical. Should output filename be returned?}
+
 \item{infoDB}{Databasee containing info on each source file.}
+
+\item{nrend}{Number of renditions per bout.}
 }
 \description{
 Generate auditory presentations based on existing sound files.
@@ -58,22 +64,6 @@ Generate auditory presentations based on existing sound files.
 If the length of the source audio files is such that the presentation
  would end being longer than T, the last instance of the source sound will be
  truncated in order for the duration of the presentation to be equal to T.
-
- More than one directory file can be given in fs. Use the concanteante (c())
- function to list the directories.
-
- Name of files should be stored in a table, relating the name of the file to
- a particular species. Alternatively, the species can be included in the name
- of the file.
-
- Have just one script that will allow to generate stimuli for all
- experiments. Then, create three derivative functions, one for each
- experiment.
-
- For auditory stimuli experiment set bout.length, intRend.type,
- intRend.length (for positive control), nbout, tpres.'
-
- For ZENK stimuli, set rate, nrend, intBout.length, intBout.type
 }
 \keyword{audio}
 \keyword{stimuli}
