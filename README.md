@@ -1,26 +1,6 @@
----
-title: "portableStim: Getting Started"
-author: "Carlos Antonio Rodriguez-Saltos"
-date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Vignette Title}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
-
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
-```
+# portableStim
 
 The portableStim packages allows the user to generate acoustic presentations based on a single source audio file. The audio file is repeated several times, according to user specifications, and silence gaps are placed in between repeates. The silence gaps may be constant in duration or they may be drawn from a random, Poisson distribution, depending on user specifications.
-
-A typical presentation generated using portableStim will have the following structure:
-
-![Structure of an acoustic presentation generated using portableStim](presentation_diagram.png){width=600px}
 
 ## Installing portableStim
 portableStim can be easily installed inot an R distribution by running the following command, from the R console:
