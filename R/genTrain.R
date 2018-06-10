@@ -116,6 +116,8 @@ genTrain <- function(
     f <- file.path(fdir, "tico.wav")
     tuneR::writeWave(object = tico, filename = f)
     #rm(tico)
+  }else{
+    f <- sound
   }
 
   # TODO: Use sox to extract audio file info
