@@ -27,6 +27,10 @@ metamerize <- function(sound, gaps, total, output){
   tempwav2 <- tempfile(fileext = ".wav")
 
   # Metamerize----
+
+  #Gaps need to be rounded before piping them to sox, because it seems that sox
+  #tends to round themusing the ceiling method.
+  gaps <- round(x = gaps, digits = 3)
   for (i in 1:length(gaps)){
     if (i == 1){
       # First gap
